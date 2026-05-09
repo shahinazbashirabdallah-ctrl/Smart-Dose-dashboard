@@ -1,0 +1,979 @@
+<!DOCTYPE html>
+<html dir="rtl" lang="ar">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>SMART DOSE</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.0/chart.umd.min.js"></script>
+<link href="https://fonts.googleapis.com/css2?family=Cairo:wght@300;400;600;700;900&family=Space+Grotesk:wght@600;700;800&display=swap" rel="stylesheet">
+<style>canvas{background:transparent!important}</style>
+<style>
+:root {
+  --bg:    #0a0a0f;
+  --s1:    #111118;
+  --s2:    #18181f;
+  --s3:    #22222c;
+  --border:#2a2a38;
+  --text:  #f0f0ff;
+  --muted: #6b6b8a;
+  --dim:   #3a3a50;
+
+  --red:   #ff3d5a;
+  --yellow:#ffd000;
+  --green: #00e5a0;
+  --blue:  #00b4ff;
+  --purple:#b467ff;
+  --orange:#ff7a00;
+
+  --r2:rgba(255,61,90,.15);
+  --y2:rgba(255,208,0,.15);
+  --g2:rgba(0,229,160,.15);
+  --b2:rgba(0,180,255,.15);
+  --p2:rgba(180,103,255,.15);
+}
+
+*{margin:0;padding:0;box-sizing:border-box}
+body{background:var(--bg);color:var(--text);font-family:'Cairo',sans-serif;min-height:100vh;overflow-x:hidden}*{font-family:'Cairo',sans-serif}
+
+/* ── UPLOAD ── */
+.upload-screen{
+  min-height:100vh;display:flex;align-items:center;justify-content:center;
+  background:radial-gradient(ellipse 80% 60% at 50% 0%,rgba(0,180,255,.08),transparent);
+  padding:24px;
+}
+.upload-card{
+  background:var(--s1);border:1px solid var(--border);border-radius:24px;
+  padding:48px 40px;max-width:520px;width:100%;text-align:center;
+  box-shadow:0 32px 80px rgba(0,0,0,.5);
+}
+.logo{font-family:'Space Grotesk',sans-serif;font-size:36px;font-weight:800;letter-spacing:2px;
+  background:linear-gradient(135deg,var(--blue),var(--green));
+  -webkit-background-clip:text;-webkit-text-fill-color:transparent}
+.logo-tag{font-size:11px;color:var(--muted);letter-spacing:3px;text-transform:uppercase;margin-top:4px;margin-bottom:36px}
+.drop-zone{
+  border:2px dashed var(--border);border-radius:16px;padding:40px 24px;
+  transition:all .3s;cursor:pointer;background:var(--s2);
+}
+.drop-zone:hover,.drop-zone.drag{border-color:var(--blue);background:rgba(0,180,255,.05)}
+.drop-icon{font-size:40px;display:block;margin-bottom:12px}
+.drop-title{font-size:16px;font-weight:600;margin-bottom:6px}
+.drop-sub{font-size:13px;color:var(--muted);margin-bottom:20px}
+.btn-upload{
+  display:inline-block;background:linear-gradient(135deg,var(--blue),var(--green));
+  color:#000;font-family:'Cairo',sans-serif;font-weight:700;font-size:14px;
+  padding:12px 32px;border-radius:50px;cursor:pointer;border:none;
+  transition:opacity .2s;
+}
+.btn-upload:hover{opacity:.85}
+.drop-note{font-size:11px;color:var(--muted);margin-top:12px}
+.err{color:var(--red);font-size:13px;margin-top:12px;min-height:20px}
+
+/* ── DASHBOARD ── */
+.dash-screen{display:none}
+.topbar{
+  position:sticky;top:0;z-index:100;
+  background:rgba(10,10,15,.9);backdrop-filter:blur(20px);
+  border-bottom:1px solid var(--border);
+  display:flex;align-items:center;gap:12px;padding:10px 24px;flex-wrap:wrap;
+  min-height:60px;
+}
+.top-logo{font-family:'Space Grotesk',sans-serif;font-weight:800;font-size:18px;letter-spacing:1px;
+  background:linear-gradient(135deg,var(--blue),var(--green));
+  -webkit-background-clip:text;-webkit-text-fill-color:transparent;white-space:nowrap}
+.top-file{display:flex;align-items:center;gap:8px;font-size:12px;color:var(--muted);
+  background:var(--s2);border:1px solid var(--border);border-radius:50px;padding:6px 14px}
+.top-dot{width:7px;height:7px;border-radius:50%;background:var(--green);box-shadow:0 0 6px var(--green)}
+.tabs{display:flex;gap:4px;margin-right:auto;flex-wrap:wrap}
+.tab{
+  padding:7px 14px;border-radius:8px;font-size:12px;font-family:'Cairo',sans-serif;
+  font-weight:600;cursor:pointer;border:none;background:transparent;color:var(--muted);
+  transition:all .2s;white-space:nowrap;
+}
+.tab:hover{color:var(--text);background:var(--s2)}
+.tab.active{color:var(--text);background:var(--s3)}
+.btn-new{
+  background:var(--s2);border:1px solid var(--border);color:var(--muted);
+  font-family:'Cairo',sans-serif;font-size:12px;padding:7px 14px;border-radius:8px;
+  cursor:pointer;white-space:nowrap;transition:all .2s;
+}
+.btn-new:hover{color:var(--text);border-color:var(--dim)}
+
+/* ── PAGES ── */
+.page{display:none;padding:28px 24px;max-width:1400px;margin:0 auto;animation:fadeIn .3s ease}
+.page.active{display:block}
+@keyframes fadeIn{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
+
+/* ── SECTION HEADER ── */
+.sec-head{margin-bottom:24px}
+.sec-title{font-family:'Space Grotesk',sans-serif;font-size:22px;font-weight:800;margin-bottom:4px}
+.sec-sub{font-size:13px;color:var(--muted)}
+.confidence-badge{
+  display:inline-flex;align-items:center;gap:6px;
+  background:var(--g2);border:1px solid rgba(0,229,160,.25);
+  color:var(--green);font-size:11px;padding:4px 12px;border-radius:50px;margin-top:8px
+}
+
+/* ── GRIDS ── */
+.g5{display:grid;grid-template-columns:repeat(5,1fr);gap:12px;margin-bottom:20px}
+.g4{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:20px}
+.g3{display:grid;grid-template-columns:repeat(3,1fr);gap:16px;margin-bottom:20px}
+.g2{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:20px}
+.g1{margin-bottom:20px}
+@media(max-width:900px){.g5{grid-template-columns:repeat(3,1fr)}.g4{grid-template-columns:repeat(2,1fr)}.g2{grid-template-columns:1fr}}
+@media(max-width:600px){.g5,.g4,.g3{grid-template-columns:1fr 1fr}}
+
+/* ── KPI CARDS ── */
+.kpi{background:var(--s1);border:1px solid var(--border);border-radius:14px;padding:18px 16px;position:relative;overflow:hidden}
+.kpi::before{content:'';position:absolute;top:0;left:0;right:0;height:3px;border-radius:3px 3px 0 0}
+.kpi.kr::before{background:var(--red)}
+.kpi.ky::before{background:var(--yellow)}
+.kpi.kg::before{background:var(--green)}
+.kpi.kb::before{background:var(--blue)}
+.kpi.kp::before{background:var(--purple)}
+.kpi.ko::before{background:var(--orange)}
+.kpi-label{font-size:11px;color:var(--muted);margin-bottom:8px;font-weight:600;letter-spacing:.5px}
+.kpi-val{font-family:'Space Grotesk',sans-serif;font-size:28px;font-weight:800;line-height:1}
+.kpi-sub{font-size:11px;color:var(--muted);margin-top:6px}
+
+/* ── INSIGHT BOX ── */
+.ins{
+  background:var(--s2);border:1px solid rgba(0,180,255,.2);border-radius:14px;
+  padding:16px 20px;display:flex;align-items:flex-start;gap:14px;margin-bottom:20px;
+}
+.ins-icon{font-size:22px;flex-shrink:0;margin-top:2px}
+.ins-label{font-size:11px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:var(--blue);margin-bottom:4px}
+.ins-text{font-size:13px;color:var(--text);line-height:1.7;margin-bottom:4px}
+.ins-note{font-size:11px;color:var(--muted)}
+.tag{display:inline-flex;align-items:center;gap:4px;font-size:11px;padding:3px 10px;border-radius:50px;margin-top:6px;font-weight:600}
+.tag-g{background:var(--g2);color:var(--green);border:1px solid rgba(0,229,160,.25)}
+.tag-b{background:var(--b2);color:var(--blue);border:1px solid rgba(0,180,255,.25)}
+.tag-p{background:var(--p2);color:var(--purple);border:1px solid rgba(180,103,255,.25)}
+
+/* ── CHART CARD ── */
+.card{background:var(--s1);border:1px solid var(--border);border-radius:16px;padding:20px;overflow:hidden}
+.card-title{font-size:13px;font-weight:700;color:var(--muted);margin-bottom:16px;display:flex;align-items:center;gap:8px}
+.card-title .ic{font-size:16px}
+
+/* ── RISK BARS ── */
+.risk-bar-wrap{margin-bottom:16px}
+.risk-bar-head{display:flex;justify-content:space-between;align-items:center;margin-bottom:6px}
+.risk-bar-label{font-size:13px;font-weight:600}
+.risk-bar-val{font-family:'Space Grotesk',sans-serif;font-size:16px;font-weight:800}
+.risk-bar-track{height:10px;background:var(--s3);border-radius:10px;overflow:hidden}
+.risk-bar-fill{height:100%;border-radius:10px;transition:width 1s cubic-bezier(.4,0,.2,1)}
+
+/* ── SEG CARDS ── */
+.seg-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:16px;margin-bottom:20px}
+.seg-card{background:var(--s1);border:1px solid var(--border);border-radius:16px;padding:20px;text-align:center}
+.seg-icon{font-size:32px;margin-bottom:8px}
+.seg-name{font-size:14px;font-weight:700;margin-bottom:4px}
+.seg-count{font-family:'Space Grotesk',sans-serif;font-size:32px;font-weight:800;margin-bottom:4px}
+.seg-pct{font-size:12px;color:var(--muted)}
+.seg-desc{font-size:11px;color:var(--muted);margin-top:8px;line-height:1.6}
+
+/* ── SCORE CARDS ── */
+.score-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:20px}
+.score-card{background:var(--s1);border:1px solid var(--border);border-radius:14px;padding:16px;text-align:center}
+.score-name{font-size:11px;color:var(--muted);margin-bottom:8px;font-weight:600}
+.score-ring{position:relative;width:80px;height:80px;margin:0 auto 8px}
+.score-ring svg{width:80px;height:80px;transform:rotate(-90deg)}
+.score-ring-bg{fill:none;stroke:var(--s3);stroke-width:8}
+.score-ring-fill{fill:none;stroke-width:8;stroke-linecap:round;transition:stroke-dashoffset 1.2s cubic-bezier(.4,0,.2,1)}
+.score-ring-num{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-family:'Space Grotesk',sans-serif;font-size:18px;font-weight:800}
+.score-level{font-size:11px;font-weight:700;padding:3px 10px;border-radius:50px}
+
+/* ── REASONS ── */
+.reason-item{display:flex;align-items:center;gap:12px;padding:10px 0;border-bottom:1px solid var(--border)}
+.reason-item:last-child{border-bottom:none}
+.reason-rank{font-family:'Space Grotesk',sans-serif;font-size:20px;font-weight:800;color:var(--muted);width:28px;flex-shrink:0}
+.reason-bar-wrap{flex:1}
+.reason-name{font-size:13px;font-weight:600;margin-bottom:4px}
+.reason-comment{font-size:11px;color:var(--muted);margin-bottom:4px}
+.reason-track{height:6px;background:var(--s3);border-radius:6px;overflow:hidden}
+.reason-fill{height:100%;border-radius:6px}
+.reason-pct{font-family:'Space Grotesk',sans-serif;font-size:14px;font-weight:800;flex-shrink:0;width:40px;text-align:left}
+
+/* ── ROI INPUTS ── */
+.input-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:20px}
+.inp-wrap{background:var(--s1);border:1px solid var(--border);border-radius:12px;padding:14px 16px}
+.inp-label{font-size:11px;color:var(--muted);margin-bottom:6px;font-weight:600}
+.inp-field{width:100%;background:var(--s3);border:1px solid var(--border);border-radius:8px;
+  padding:8px 12px;color:var(--text);font-family:'Cairo',sans-serif;font-size:14px;font-weight:600;
+  transition:border-color .2s}
+.inp-field:focus{outline:none;border-color:var(--blue)}
+
+/* ── ENV HIGHLIGHT ── */
+.wow-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:16px;margin-bottom:20px}
+.wow-card{
+  background:linear-gradient(135deg,var(--s2),var(--s1));
+  border:1px solid var(--border);border-radius:16px;padding:24px;text-align:center;
+  position:relative;overflow:hidden;
+}
+.wow-card::after{content:'';position:absolute;inset:0;opacity:.04;
+  background:radial-gradient(circle at 50% 0%,var(--green),transparent)}
+.wow-num{font-family:'Space Grotesk',sans-serif;font-size:40px;font-weight:800;
+  background:linear-gradient(135deg,var(--green),var(--blue));
+  -webkit-background-clip:text;-webkit-text-fill-color:transparent;line-height:1}
+.wow-unit{font-size:13px;color:var(--green);font-weight:600;margin-bottom:4px}
+.wow-label{font-size:12px;color:var(--muted);line-height:1.5}
+
+/* ── MARKETING CARDS ── */
+.mkt-card{background:var(--s1);border:1px solid var(--border);border-radius:16px;padding:20px}
+.mkt-title{font-size:13px;font-weight:700;margin-bottom:12px;display:flex;align-items:center;gap:8px}
+.mkt-item{font-size:12px;color:var(--muted);line-height:2;padding-right:4px}
+.mkt-item strong{color:var(--text)}
+
+input[type=file]{display:none}
+</style>
+</head>
+<body>
+
+<!-- UPLOAD -->
+<div class="upload-screen" id="s-upload">
+  <div class="upload-card">
+    <div class="logo">SMART DOSE</div>
+    <div class="logo-tag">Behavior-Driven Consumer Intelligence</div>
+    <div class="drop-zone" id="dropZone">
+      <span class="drop-icon">📊</span>
+      <div class="drop-title">Upload Survey File</div>
+      <div class="drop-sub">Drop your Excel file here or click to browse</div>
+      <label for="fileInput" class="btn-upload">Choose File</label>
+      <div class="drop-note">Supports .xlsx / .xls / .csv</div>
+    </div>
+    <div class="err" id="errMsg"></div>
+    <input type="file" id="fileInput" accept=".xlsx,.xls,.csv">
+  </div>
+</div>
+
+<!-- DASHBOARD -->
+<div class="dash-screen" id="s-dash">
+  <div class="topbar">
+    <div class="top-logo">SMART DOSE</div>
+    <div class="top-file"><div class="top-dot"></div><span id="topFile">—</span></div>
+    <div class="tabs">
+      <button class="tab active" onclick="showPage('p1',this)">📊 Overview</button>
+      <button class="tab" onclick="showPage('p2',this)">👥 Segmentation</button>
+      <button class="tab" onclick="showPage('p3',this)">⚠️ Waste Score</button>
+      <button class="tab" onclick="showPage('p4',this)">💰 Growth Opportunity</button>
+      <button class="tab" onclick="showPage('p5',this)">🌱 Environmental Impact</button>
+    </div>
+    <button class="btn-new" onclick="resetAll()">+ New File</button>
+  </div>
+
+  <!-- PAGE 1: OVERVIEW -->
+  <div class="page active" id="p1">
+    <div class="sec-head">
+      <div class="sec-title">📊 Waste Behavior Overview</div>
+      <div class="sec-sub" id="p1sub">Consumer usage patterns and risk distribution</div>
+      <div class="confidence-badge">✓ Confidence Level 90% &nbsp;|&nbsp; Margin of Error ±5%</div>
+    </div>
+    <div class="g5" id="kpiRow"></div>
+    <div class="ins" id="ins1"></div>
+    <div class="g2">
+      <div class="card">
+        <div class="card-title"><span class="ic">🎯</span>Risk Level Distribution</div>
+        <div id="riskBars"></div>
+      </div>
+      <div class="card">
+        <div class="card-title"><span class="ic">💧</span>Does the user dilute the product?</div>
+        <canvas id="cDilution"></canvas>
+      </div>
+    </div>
+    <div class="g2">
+      <div class="card">
+        <div class="card-title"><span class="ic">📋</span>Clarity of Usage Instructions</div>
+        <canvas id="cDirections"></canvas>
+      </div>
+      <div class="card">
+        <div class="card-title"><span class="ic">📦</span>Satisfaction with Packaging Design</div>
+        <canvas id="cDesign"></canvas>
+      </div>
+    </div>
+    <div class="ins" style="border-color:rgba(0,229,160,.2)" id="ins1b"></div>
+  </div>
+
+  <!-- PAGE 2: SEGMENTATION -->
+  <div class="page" id="p2">
+    <div class="sec-head">
+      <div class="sec-title">👥 Consumer Segmentation</div>
+      <div class="sec-sub">Understanding <em>who</em> your consumers are helps you decide <em>what</em> to do with each segment</div>
+    </div>
+    <div class="ins" style="border-color:rgba(180,103,255,.2)">
+      <div class="ins-icon">💡</div>
+      <div>
+        <div class="ins-label">Risk Level vs Segment — What's the difference?</div>
+        <div class="ins-text"><strong>Risk Level</strong> answers: <em>How at-risk is your product?</em> — It measures the product's exposure to waste.</div>
+        <div class="ins-text"><strong>Segment</strong> answers: <em>Who is your consumer?</em> — It guides your marketing and communication strategy.</div>
+      </div>
+    </div>
+    <div class="seg-grid" id="segCards"></div>
+    <div class="g2">
+      <div class="card">
+        <div class="card-title"><span class="ic">📊</span>Segment Distribution</div>
+        <canvas id="cSeg"></canvas>
+      </div>
+      <div class="card">
+        <div class="card-title"><span class="ic">🔍</span>Top Reasons for Quantity Variation</div>
+        <div id="reasonList"></div>
+      </div>
+    </div>
+    <div class="card g1">
+      <div class="card-title"><span class="ic">✅</span>If dosage was clearer — would usage decrease?</div>
+      <canvas id="cClarity" style="max-height:200px"></canvas>
+    </div>
+  </div>
+
+  <!-- PAGE 3: WASTE SCORE -->
+  <div class="page" id="p3">
+    <div class="sec-head">
+      <div class="sec-title">⚠️ Waste Score Analysis</div>
+      <div class="sec-sub">Each factor is scored 0–100 based on its impact on product over-consumption</div>
+    </div>
+    <div class="ins" id="ins3"></div>
+    <div class="score-grid" id="scoreCards"></div>
+    <div class="g2">
+      <div class="card">
+        <div class="card-title"><span class="ic">📉</span>Factor Comparison</div>
+        <canvas id="cScoreBars"></canvas>
+      </div>
+      <div class="card">
+        <div class="card-title"><span class="ic">💧</span>Dilution Behavior — Awareness Indicator</div>
+        <canvas id="cDilution2"></canvas>
+        <div style="font-size:12px;color:var(--muted);margin-top:12px;line-height:1.7" id="dilutionNote"></div>
+      </div>
+    </div>
+    <div class="g3" id="recCards"></div>
+  </div>
+
+  <!-- PAGE 4: GROWTH OPPORTUNITY -->
+  <div class="page" id="p4">
+    <div class="sec-head">
+      <div class="sec-title">💰 Growth Opportunity</div>
+      <div class="sec-sub">Enter your product data to reveal the untapped opportunity in your market</div>
+    </div>
+    <div class="input-grid">
+      <div class="inp-wrap">
+        <div class="inp-label">PRODUCT PRICE (EGP)</div>
+        <input class="inp-field" id="inp-price" type="number" value="40" min="1" oninput="calcROI()">
+      </div>
+      <div class="inp-wrap">
+        <div class="inp-label">BOTTLE SIZE (ML)</div>
+        <input class="inp-field" id="inp-vol" type="number" value="1000" min="1" oninput="calcROI()">
+      </div>
+      <div class="inp-wrap">
+        <div class="inp-label">NUMBER OF CUSTOMERS</div>
+        <input class="inp-field" id="inp-customers" type="number" value="10000" min="1" oninput="calcROI()">
+      </div>
+      <div class="inp-wrap">
+        <div class="inp-label">PRODUCTION COST (EGP)</div>
+        <input class="inp-field" id="inp-cost" type="number" value="20" min="1" oninput="calcROI()">
+      </div>
+    </div>
+    <div class="g4" id="roiKPIs"></div>
+    <div class="ins" id="roiIns"></div>
+    <div class="g2">
+      <div class="card">
+        <div class="card-title"><span class="ic">👥</span>Customers — Between Risk and Opportunity</div>
+        <canvas id="cBarROI"></canvas>
+      </div>
+      <div class="card">
+        <div class="card-title"><span class="ic">💰</span>Current vs Potential Annual Profit</div>
+        <canvas id="cMarginROI"></canvas>
+      </div>
+    </div>
+  </div>
+
+  <!-- PAGE 5: ENVIRONMENTAL IMPACT -->
+  <div class="page" id="p5">
+    <div class="sec-head">
+      <div class="sec-title">🌱 Environmental Impact</div>
+      <div class="sec-sub">Your sustainability story — backed by real data</div>
+    </div>
+    <div class="input-grid" style="grid-template-columns:repeat(3,1fr)">
+      <div class="inp-wrap">
+        <div class="inp-label">BOTTLE WEIGHT (GRAMS)</div>
+        <input class="inp-field" id="inp-weight" type="number" value="35" min="1" oninput="calcEnv()">
+      </div>
+      <div class="inp-wrap">
+        <div class="inp-label">MONTHLY UNITS SOLD</div>
+        <input class="inp-field" id="inp-units" type="number" value="25000" min="1" oninput="calcEnv()">
+      </div>
+      <div class="inp-wrap">
+        <div class="inp-label">DISTRIBUTION AREA</div>
+        <select class="inp-field" id="inp-area" onchange="calcEnv()">
+          <option value="1">1 Governorate</option>
+          <option value="2" selected>2 Governorates</option>
+          <option value="5">5 Governorates</option>
+          <option value="10">10+ Governorates</option>
+        </select>
+      </div>
+    </div>
+    <div class="ins" style="background:linear-gradient(135deg,rgba(0,229,160,.08),rgba(0,180,255,.05));border-color:rgba(0,229,160,.2)" id="envIns"></div>
+    <div class="wow-grid" id="wowCards"></div>
+    <div class="g2">
+      <div class="card">
+        <div class="card-title"><span class="ic">💧</span>Water Savings Potential (m³/month)</div>
+        <canvas id="cEnvWater"></canvas>
+      </div>
+      <div class="card">
+        <div class="card-title"><span class="ic">♻️</span>Plastic Reduction Scenarios (bottles/year)</div>
+        <canvas id="cEnvPlastic"></canvas>
+      </div>
+    </div>
+    <div class="g3" id="mktCards"></div>
+  </div>
+</div>
+
+<script>
+// ── COLUMNS ──
+const COLS={
+  overuse:   'هل تستخدم كمية أكبر من الموصى بها؟',
+  directions:'هل تعليمات الاستخدام واضحة على العبوة؟',
+  design:    'هل شكل العبوة يساعدك على استخدام الكمية الصحيحة؟',
+  dilution:  'هل تستخدم المنتج كما هو أم تُخففه بالمياه؟',
+  reason:    'ما سبب استخدام كمية مختلفة؟',
+  clarity:   'لو المنتج بقى أوضح في تحديد الجرعة، هل هيساعدك تقلل الاستخدام الزائد؟',
+  presses:   'كام ضغطة بتستخدم في كل مرة؟',
+  washfreq:  'بتغسلي المواعين كام مرة في اليوم؟',
+};
+const YES_OV =['نعم','yes','y','1'];
+const UNK_OV =['لا اعرف','لا أعرف','unknown','لا اعرف الجرعة','لا أعرف الجرعة'];
+const BAD_DIR=['غير واضحة','غير واضح','غير واضحة جدا'];
+const BAD_DES=['غير راضي','غير راضي جدا','غير'];
+
+let rawData=[],A={},charts={};
+
+// ── FILE UPLOAD ──
+const dz=document.getElementById('dropZone');
+const fi=document.getElementById('fileInput');
+dz.addEventListener('dragover',e=>{e.preventDefault();dz.classList.add('drag')});
+dz.addEventListener('dragleave',()=>dz.classList.remove('drag'));
+dz.addEventListener('drop',e=>{e.preventDefault();dz.classList.remove('drag');if(e.dataTransfer.files[0])loadFile(e.dataTransfer.files[0])});
+fi.addEventListener('change',e=>{if(e.target.files&&e.target.files[0])loadFile(e.target.files[0])});
+
+function loadFile(file){
+  const reader=new FileReader();
+  reader.onload=e=>{
+    try{
+      const wb=XLSX.read(new Uint8Array(e.target.result),{type:'array'});
+      rawData=XLSX.utils.sheet_to_json(wb.Sheets[wb.SheetNames[0]],{defval:''});
+      if(!rawData.length){showErr('File is empty!');return}
+      rawData=rawData.map(row=>{
+        const clean={};
+        Object.keys(row).forEach(k=>{clean[k.trim()]=row[k]});
+        return clean;
+      });
+      document.getElementById('topFile').textContent=file.name;
+      compute();
+      renderAll();
+      document.getElementById('s-upload').style.display='none';
+      document.getElementById('s-dash').style.display='block';
+      setTimeout(()=>{calcROI();calcEnv()},400);
+    }catch(err){showErr('Error: '+err.message);console.error(err)}
+  };
+  reader.readAsArrayBuffer(file);
+}
+function showErr(m){document.getElementById('errMsg').textContent=m}
+
+// ── HELPERS ──
+function getCol(key){
+  const t=COLS[key];
+  return rawData[0]?Object.keys(rawData[0]).find(k=>k.trim().includes(t.substring(0,15)))||null:null;
+}
+function n(v){return String(v||'').trim().toLowerCase()}
+function vc(arr){return arr.reduce((m,v)=>{m[v]=(m[v]||0)+1;return m},{})}
+function pct(a,b){return Math.round(a/b*100)}
+
+// ── COMPUTE ──
+function compute(){
+  const total=rawData.length;
+  const ov=getCol('overuse'),dir=getCol('directions'),des=getCol('design');
+  const dil=getCol('dilution'),rea=getCol('reason'),cla=getCol('clarity');
+
+  rawData.forEach(row=>{
+    const ovv=ov?n(row[ov]):'';
+    if(YES_OV.some(a=>ovv.includes(a))) row._risk='Confirmed Overuse';
+    else if(UNK_OV.some(a=>ovv.includes(a))) row._risk='Potential Risk';
+    else row._risk='Low Risk';
+
+    let sc=0;
+    if(row._risk==='Confirmed Overuse') sc+=3;
+    else if(row._risk==='Potential Risk') sc+=2;
+    if(dir&&BAD_DIR.some(a=>n(row[dir]).includes(a))) sc+=2;
+    if(des&&BAD_DES.some(a=>n(row[des]).includes(a))) sc+=2;
+    if(dil&&n(row[dil]).includes('اخففه دايما')) sc+=1;
+    row._seg=sc>=5?'Waster':sc>=2?'Unaware':'Conscious';
+
+    if(rea){
+      const t=String(row[rea]||'');
+      if(!t||t.trim()===''||t.trim()==='.') row._reason='Unspecified';
+      else if(/رغوة|قوام|دهون|ينضف|جودة|نتيجة|أفضل نوع|أحسن نوع|جربت أنواع/.test(t)) row._reason='Performance Quality';
+      else if(/عبوة|غطاء|فتحة|pump|بمب|إزازة|ازازة|جركن|علبة صغيرة|بخاخة|العلبة الكبيرة/.test(t)) row._reason='Packaging Design';
+      else if(/بخففه|اخففه|تخفيف|خل|موفر|اوفر|المواعين كتير/.test(t)) row._reason='Dilution & Saving';
+      else if(/سعر|غالي|الأرخص|غسالة الأطباق/.test(t)) row._reason='Price Sensitivity';
+      else if(/ريحت|رائحة|ليمون|نفاذة|مريح/.test(t)) row._reason='Scent Preference';
+      else if(/حساسية|قشرة|ناعم|الايد|أثر/.test(t)) row._reason='Skin Sensitivity';
+      else if(/تعليمات|تعليم|خط صغير|مش مفهوم|مفيش/.test(t)) row._reason='Unclear Instructions';
+      else if(/لون|شكل|أخضر|اخضر/.test(t)) row._reason='Color & Appearance';
+      else if(/عادة|ثابت|مهتم|مبيتحطش|بيجير|جير/.test(t)) row._reason='Usage Habit';
+      else row._reason='Unspecified';
+    }
+  });
+
+  A.total=total;
+  A.risk=vc(rawData.map(r=>r._risk));
+  A.seg=vc(rawData.map(r=>r._seg));
+
+  A.dose_s=pct(rawData.filter(r=>r._risk!=='Low Risk').length,total);
+  A.design_s=des?pct(rawData.filter(r=>BAD_DES.some(a=>n(r[des]).includes(a))).length,total):0;
+  A.instr_s=dir?pct(rawData.filter(r=>BAD_DIR.some(a=>n(r[dir]).includes(a))).length,total):0;
+  A.dilut_s=dil?pct(rawData.filter(r=>n(r[dil])!=='كما هو').length,total):0;
+  A.aware_s=cla?pct(rawData.filter(r=>['نعم','ربما'].includes(String(r[cla]).trim())).length,total):0;
+  // avg from 4 factors (excluding dilution)
+  A.avg_s=Math.round((A.dose_s+A.design_s+A.instr_s+A.aware_s)/4);
+
+  A.reason=vc(rawData.map(r=>r._reason).filter(Boolean));
+  A.clarity=cla?vc(rawData.map(r=>String(r[cla]).trim())):{}; 
+  A.dilution=dil?vc(rawData.map(r=>String(r[dil]).trim())):{};
+  A.directions=dir?vc(rawData.map(r=>String(r[dir]).trim())):{};
+  A.design_dist=des?vc(rawData.map(r=>String(r[des]).trim())):{};
+
+  // نسبة "نعم" من سؤال الوضوح — للاستخدام في ROI
+  A.clarityYesPct=cla?pct(rawData.filter(r=>String(r[cla]).trim()==='نعم').length,total):40;
+
+  // Water calc
+  const pCol=getCol('presses'),wCol=getCol('washfreq');
+  if(pCol&&wCol){
+    const mlPerPress=7,waterPerMl=15;
+    const pressMap={'ضغطة واحدة':1,'ضغطتين':2,'أكتر من ضغطتين':3};
+    const freqMap={'مرة واحدة':1,'مرتين':2,'أكتر من مرتين':3};
+    let totalW=0,optW=0;
+    rawData.forEach(r=>{
+      const p=pressMap[String(r[pCol]).trim()]||2;
+      const f=freqMap[String(r[wCol]).trim()]||2;
+      totalW+=p*mlPerPress*waterPerMl*f*30;
+      optW+=1*mlPerPress*waterPerMl*f*30;
+    });
+    A.waterTotal=Math.round(totalW/1000);
+    A.waterOptimal=Math.round(optW/1000);
+    A.waterSaved=A.waterTotal-A.waterOptimal;
+    A.waterPct=Math.round(A.waterSaved/A.waterTotal*100);
+  }
+}
+
+// ── CHART HELPERS ──
+// Chart.js 4 global defaults
+Chart.defaults.color = '#f0f0ff';
+Chart.defaults.borderColor = 'rgba(42,42,56,.6)';
+Chart.defaults.font.family = 'Cairo';
+Chart.defaults.font.size = 12;
+Chart.defaults.plugins.legend.labels.color = '#f0f0ff';
+Chart.defaults.plugins.legend.labels.font = {family:'Cairo',size:11};
+Chart.defaults.plugins.tooltip.backgroundColor = '#22222c';
+Chart.defaults.plugins.tooltip.titleColor = '#f0f0ff';
+Chart.defaults.plugins.tooltip.bodyColor = '#f0f0ff';
+Chart.defaults.plugins.tooltip.borderColor = '#2a2a38';
+Chart.defaults.plugins.tooltip.borderWidth = 1;
+// Scale defaults for Chart.js 4
+['linear','category','radialLinear'].forEach(t=>{
+  if(Chart.defaults.scales[t]){
+    Chart.defaults.scales[t].ticks = Chart.defaults.scales[t].ticks||{};
+    Chart.defaults.scales[t].ticks.color = '#6b6b8a';
+    Chart.defaults.scales[t].ticks.font = {family:'Cairo',size:11};
+    Chart.defaults.scales[t].grid = Chart.defaults.scales[t].grid||{};
+    Chart.defaults.scales[t].grid.color = 'rgba(42,42,56,.6)';
+  }
+});
+
+function mkChart(id,config){
+  if(charts[id]) charts[id].destroy();
+  const el=document.getElementById(id);
+  if(!el) return;
+  charts[id]=new Chart(el,config);
+}
+const gridOpts={color:'rgba(42,42,56,.6)'};
+const tickOpts={color:'#6b6b8a'};
+const legendOpts={position:'bottom',labels:{padding:16,font:{size:11,family:'Cairo'},color:'#f0f0ff'}};
+
+const COLORS=['#00b4ff','#ffd000','#ff3d5a','#00e5a0','#b467ff','#ff7a00','#00e5ff','#ff6b9d'];
+
+function barConfig(labels,data,colors){
+  return{type:'bar',data:{labels,datasets:[{data,backgroundColor:colors||COLORS.slice(0,data.length),borderRadius:8,borderSkipped:false}]},
+    options:{plugins:{legend:{display:false}},scales:{
+      x:{ticks:{color:'#6b6b8a'},grid:{color:'rgba(42,42,56,.6)'}},
+      y:{ticks:{color:'#6b6b8a'},grid:{color:'rgba(42,42,56,.6)'}}}}};
+}
+function doughnutConfig(labels,data,colors){
+  return{type:'doughnut',data:{labels,datasets:[{data,backgroundColor:colors||COLORS.slice(0,data.length),borderWidth:0,hoverOffset:6}]},
+    options:{plugins:{legend:{position:'bottom',labels:{padding:16,font:{size:12,family:'Cairo'},color:'#dcdcf4'}}},cutout:'65%'}};
+}
+
+// ── RENDER ALL ──
+function renderAll(){
+  renderOverview();
+  renderSegmentation();
+  renderWasteScore();
+}
+
+function renderOverview(){
+  const t=A.total;
+  const co=A.risk['Confirmed Overuse']||0;
+  const pr=A.risk['Potential Risk']||0;
+  const lr=A.risk['Low Risk']||0;
+
+  // KPIs
+  document.getElementById('p1sub').textContent=`Based on ${t} real consumer responses`;
+  document.getElementById('kpiRow').innerHTML=`
+    <div class="kpi kr"><div class="kpi-label">CONFIRMED OVERUSE</div><div class="kpi-val">${co}</div><div class="kpi-sub">${pct(co,t)}% of respondents</div></div>
+    <div class="kpi ky"><div class="kpi-label">POTENTIAL RISK</div><div class="kpi-val">${pr}</div><div class="kpi-sub">${pct(pr,t)}% of respondents</div></div>
+    <div class="kpi kg"><div class="kpi-label">LOW RISK</div><div class="kpi-val">${lr}</div><div class="kpi-sub">${pct(lr,t)}% of respondents</div></div>
+    <div class="kpi kb"><div class="kpi-label">WASTE SCORE AVG</div><div class="kpi-val">${A.avg_s}</div><div class="kpi-sub">out of 100</div></div>
+    <div class="kpi kp"><div class="kpi-label">OPEN TO CHANGE</div><div class="kpi-val">${A.clarityYesPct}%</div><div class="kpi-sub">would reduce usage</div></div>`;
+
+  // Risk bars
+  const risks=[
+    {label:'🔴 Confirmed Overuse — Product is actively being over-consumed',val:co,color:'#ff3d5a'},
+    {label:'🟡 Potential Risk — Behavior shows warning signs',val:pr,color:'#ffd000'},
+    {label:'🟢 Low Risk — Usage is within acceptable range',val:lr,color:'#00e5a0'},
+  ];
+  document.getElementById('riskBars').innerHTML=risks.map(r=>`
+    <div class="risk-bar-wrap">
+      <div class="risk-bar-head">
+        <div class="risk-bar-label">${r.label}</div>
+        <div class="risk-bar-val" style="color:${r.color}">${pct(r.val,t)}%</div>
+      </div>
+      <div class="risk-bar-track"><div class="risk-bar-fill" style="width:${pct(r.val,t)}%;background:${r.color}"></div></div>
+    </div>`).join('');
+
+  // Insight
+  const topRisk=co+pr;
+  document.getElementById('ins1').innerHTML=`
+    <div class="ins-icon">⚡</div>
+    <div>
+      <div class="ins-label">Key Finding</div>
+      <div class="ins-text">${pct(topRisk,t)}% of your consumers show signs of product overuse — ${co} confirmed and ${pr} at risk. This directly impacts consumer satisfaction and product perception.</div>
+      <div class="ins-note">Risk Level measures how exposed your product is to waste behavior — not the consumer's intent.</div>
+      <span class="tag tag-b">📊 ${t} verified responses</span>
+    </div>`;
+
+  // Charts
+  const dilMap={'اخففه دايما':'Always Dilutes','كما هو':'Uses As-Is','اخففه احيانا':'Sometimes Dilutes'};
+  const dilData=Object.entries(A.dilution).map(([k,v])=>([dilMap[k]||k,v]));
+  mkChart('cDilution',doughnutConfig(dilData.map(d=>d[0]),dilData.map(d=>d[1])));
+  const dirMap={'واضحة':'Clear','محايد':'Neutral','واضحة جدا':'Very Clear','غير واضح':'Unclear','غير واضحة جدا':'Very Unclear','غير واضحة':'Not Clear'};
+  const dirData=Object.entries(A.directions).map(([k,v])=>([dirMap[k]||k,v]));
+  mkChart('cDirections',barConfig(dirData.map(d=>d[0]),dirData.map(d=>d[1])));
+  const desMap={'راضي':'Satisfied','محايد':'Neutral','غير راضي':'Unsatisfied','راضي جدا':'Very Satisfied','غير راضي جدا':'Very Unsatisfied','غير':'Unsatisfied'};
+  const desData=Object.entries(A.design_dist).map(([k,v])=>([desMap[k]||k,v]));
+  mkChart('cDesign',barConfig(desData.map(d=>d[0]),desData.map(d=>d[1])));
+
+  // Dilution insight
+  const dilutePct=A.dilut_s;
+  document.getElementById('ins1b').innerHTML=`
+    <div class="ins-icon">💡</div>
+    <div>
+      <div class="ins-label">Dilution Opportunity</div>
+      <div class="ins-text">${dilutePct}% of your consumers dilute the product. This may indicate unclear usage instructions — but it's also a market opportunity.</div>
+      <div class="ins-note">Consider launching a concentrated version at a premium price point — consumers are already behaving this way.</div>
+      <span class="tag tag-g">🚀 Untapped Product Line</span>
+    </div>`;
+}
+
+function renderSegmentation(){
+  const t=A.total;
+  const segs=[
+    {key:'Waster',icon:'🔴',name:'Waster',color:'#ff3d5a',
+      desc:'Consciously uses more than needed. Needs clear dosage guidance and packaging redesign.'},
+    {key:'Unaware',icon:'🟡',name:'Unaware User',color:'#ffd000',
+      desc:'Doesn\'t know the correct dose. Most likely to change behavior with better instructions.'},
+    {key:'Conscious',icon:'🟢',name:'Conscious User',color:'#00e5a0',
+      desc:'Uses the product correctly. Brand advocate potential — protect this segment.'},
+  ];
+
+  document.getElementById('segCards').innerHTML=segs.map(s=>{
+    const cnt=A.seg[s.key]||0;
+    return`<div class="seg-card">
+      <div class="seg-icon">${s.icon}</div>
+      <div class="seg-name" style="color:${s.color}">${s.name}</div>
+      <div class="seg-count">${cnt}</div>
+      <div class="seg-pct">${pct(cnt,t)}% of consumers</div>
+      <div class="seg-desc">${s.desc}</div>
+    </div>`;
+  }).join('');
+
+  mkChart('cSeg',doughnutConfig(
+    ['Waster','Unaware User','Conscious User'],
+    segs.map(s=>A.seg[s.key]||0),
+    ['#ff3d5a','#ffd000','#00e5a0']
+  ));
+
+  // Reasons - top 3 highlighted
+  const reasons=Object.entries(A.reason).sort((a,b)=>b[1]-a[1]).filter(r=>r[0]!=='Unspecified');
+  const total_r=reasons.reduce((s,r)=>s+r[1],0)||1;
+  const comments={
+    'Performance Quality':'Consumer increases dose to ensure better results — packaging claims may be unclear.',
+    'Packaging Design':'Bottle design leads to uncontrolled dispensing — a redesign could directly reduce waste.',
+    'Price Sensitivity':'Consumer compensates perceived value through quantity — pricing strategy may need review.',
+    'Dilution & Saving':'Consumer is already optimizing — a concentrated product line could capture this behavior.',
+    'Unclear Instructions':'Dosage guidance is missing or hard to find — a simple fix with high impact.',
+    'Usage Habit':'Behavioral pattern — loyalty programs or usage tips could reshape this.',
+    'Scent Preference':'Emotional driver — packaging communication can leverage this.',
+    'Skin Sensitivity':'Safety concern — highlight gentle formula in messaging.',
+  };
+  const rcColors=['#00b4ff','#ffd000','#ff7a00','#00e5a0','#b467ff','#ff3d5a'];
+  document.getElementById('reasonList').innerHTML=reasons.slice(0,6).map((r,i)=>`
+    <div class="reason-item">
+      <div class="reason-rank">${i<3?['🥇','🥈','🥉'][i]:i+1}</div>
+      <div class="reason-bar-wrap">
+        <div class="reason-name">${r[0]}</div>
+        ${i<3?`<div class="reason-comment">${comments[r[0]]||''}</div>`:''}
+        <div class="reason-track"><div class="reason-fill" style="width:${pct(r[1],total_r)}%;background:${rcColors[i]}"></div></div>
+      </div>
+      <div class="reason-pct" style="color:${rcColors[i]}">${pct(r[1],total_r)}%</div>
+    </div>`).join('');
+
+  const clarMap={'نعم':'Yes — Will reduce','ربما':'Maybe','لا':'No'};
+  const clData=Object.entries(A.clarity).map(([k,v])=>([clarMap[k]||k,v]));
+  mkChart('cClarity',{type:'bar',
+    data:{labels:clData.map(d=>d[0]),datasets:[{data:clData.map(d=>d[1]),backgroundColor:['#00e5a0','#ffd000','#ff3d5a'],borderRadius:8,borderSkipped:false}]},
+    options:{indexAxis:'y',plugins:{legend:{display:false}},
+      scales:{x:{ticks:{color:'#6b6b8a'},grid:{color:'rgba(42,42,56,.6)'}},
+              y:{ticks:{color:'#6b6b8a'},grid:{color:'rgba(42,42,56,.6)'}}}}});
+}
+
+function renderWasteScore(){
+  const factors=[
+    {name:'Dosage & Usage',score:A.dose_s,color:'#ff3d5a',note:'High waste driver — consumers knowingly use more than needed.'},
+    {name:'Instructions Clarity',score:A.instr_s,color:'#ffd000',note:'Unclear labeling contributes to accidental overuse.'},
+    {name:'Packaging Design',score:A.design_s,color:'#ff7a00',note:'Poor packaging design leads to uncontrolled dispensing.'},
+    {name:'Dosage Awareness',score:A.aware_s,color:'#b467ff',note:'Consumers willing to change if dosage is made clearer.'},
+  ];
+  const avg=A.avg_s;
+  const level=avg<33?{l:'Low Risk',c:'#00e5a0'}:avg<55?{l:'Moderate Risk',c:'#ffd000'}:{l:'High Risk',c:'#ff3d5a'};
+
+  document.getElementById('ins3').innerHTML=`
+    <div class="ins-icon">📊</div>
+    <div>
+      <div class="ins-label">Overall Waste Score</div>
+      <div class="ins-text">Average waste score across 4 key factors: <strong style="font-size:20px;color:${level.c}">${avg}/100</strong> — <strong style="color:${level.c}">${level.l}</strong></div>
+      <div class="ins-note">Score measures each factor's contribution to product overuse. Higher = more impact on waste behavior.</div>
+    </div>`;
+
+  const scoreColors={low:{bg:'rgba(0,229,160,.15)',c:'#00e5a0',label:'Low Impact'},mid:{bg:'rgba(255,208,0,.15)',c:'#ffd000',label:'Moderate'},high:{bg:'rgba(255,61,90,.15)',c:'#ff3d5a',label:'High Impact'}};
+  document.getElementById('scoreCards').innerHTML=factors.map(f=>{
+    const lvl=f.score<33?scoreColors.low:f.score<55?scoreColors.mid:scoreColors.high;
+    const r=36,circ=2*Math.PI*r,offset=circ*(1-f.score/100);
+    return`<div class="score-card">
+      <div class="score-name">${f.name}</div>
+      <div class="score-ring">
+        <svg viewBox="0 0 80 80">
+          <circle class="score-ring-bg" cx="40" cy="40" r="${r}"/>
+          <circle class="score-ring-fill" cx="40" cy="40" r="${r}" stroke="${f.color}"
+            stroke-dasharray="${circ}" stroke-dashoffset="${offset}"/>
+        </svg>
+        <div class="score-ring-num" style="color:${f.color}">${f.score}</div>
+      </div>
+      <div class="score-level" style="background:${lvl.bg};color:${lvl.c}">${lvl.label}</div>
+    </div>`;
+  }).join('');
+
+  mkChart('cScoreBars',{type:'bar',
+    data:{labels:factors.map(f=>f.name),datasets:[{data:factors.map(f=>f.score),backgroundColor:factors.map(f=>f.color),borderRadius:8,borderSkipped:false}]},
+    options:{indexAxis:'y',plugins:{legend:{display:false}},scales:{
+      x:{ticks:{color:'#6b6b8a'},grid:{color:'rgba(42,42,56,.6)'},max:100},
+      y:{ticks:{color:'#6b6b8a'},grid:{color:'rgba(42,42,56,.6)'}}}}});
+
+  const dilMap2={'اخففه دايما':'يخففه دايماً','كما هو':'كما هو','اخففه احيانا':'يخففه أحياناً'};
+  const dilData2=Object.entries(A.dilution).map(([k,v])=>([dilMap2[k]||k,v]));
+  mkChart('cDilution2',doughnutConfig(dilData2.map(d=>d[0]),dilData2.map(d=>d[1])));
+  document.getElementById('dilutionNote').innerHTML=
+    `⚠️ Note: Dilution is <strong>not</strong> counted as a waste factor — it often indicates cost-saving behavior.<br>
+     However, ${A.dilut_s}% dilution rate may signal <strong>unclear product instructions</strong> rather than intentional misuse.`;
+
+  document.getElementById('recCards').innerHTML=factors.sort((a,b)=>b.score-a.score).slice(0,3).map(f=>`
+    <div class="card">
+      <div class="card-title" style="color:${f.color}">⚠️ ${f.name}</div>
+      <p style="font-size:12px;color:#6b6b8a;line-height:1.9">${f.note}</p>
+    </div>`).join('');
+}
+
+// ── ROI ──
+function calcROI(){
+  if(!A.total) return;
+  const price=parseFloat(document.getElementById('inp-price')?.value)||40;
+  const vol=parseFloat(document.getElementById('inp-vol')?.value)||1000;
+  const customers=parseFloat(document.getElementById('inp-customers')?.value)||10000;
+  const cost=parseFloat(document.getElementById('inp-cost')?.value)||20;
+  const margin=price-cost;
+
+  console.log('dose_s:', A.dose_s, 'customers:', customers, 'clarityYesPct:', A.clarityYesPct);
+  const atRisk=Math.round(customers*(A.dose_s/100));
+  const convRate=A.clarityYesPct/100;
+  const gainable=Math.round(atRisk*convRate);
+  const loyalYears=3;
+  const loyalVal=Math.round(price*12*loyalYears);
+  const annualRevGain=Math.round(gainable*margin*12);
+
+  document.getElementById('roiKPIs').innerHTML=`
+    <div class="kpi kr"><div class="kpi-label">CUSTOMERS AT RISK</div><div class="kpi-val">${atRisk.toLocaleString()}</div><div class="kpi-sub">${A.dose_s}% of your base</div></div>
+    <div class="kpi ky"><div class="kpi-label">OPPORTUNITY TO CONVERT</div><div class="kpi-val">${gainable.toLocaleString()}</div><div class="kpi-sub">based on ${A.clarityYesPct}% survey response</div></div>
+    <div class="kpi kg"><div class="kpi-label">LOYAL CUSTOMER VALUE</div><div class="kpi-val">${loyalVal.toLocaleString()}</div><div class="kpi-sub">EGP over ${loyalYears} years</div></div>
+    <div class="kpi kb"><div class="kpi-label">ANNUAL REVENUE GAIN</div><div class="kpi-val">${(annualRevGain/1000).toFixed(0)}K</div><div class="kpi-sub">EGP additional profit</div></div>`;
+
+  document.getElementById('roiIns').innerHTML=`
+    <div class="ins-icon">🏆</div>
+    <div>
+      <div class="ins-label">The Golden Opportunity</div>
+      <div class="ins-text">${A.dose_s}% of your consumers are dissatisfied with dosage experience. <strong>${gainable.toLocaleString()} of them said they would change</strong> — that's not our estimate, that's your own survey data.</div>
+      <div class="ins-note">Based on ${A.clarityYesPct}% positive response rate from your survey × ${atRisk.toLocaleString()} at-risk consumers × ${loyalYears}-year loyalty value</div>
+      <span class="tag tag-g">📈 Be first to market before competitors</span>
+    </div>`;
+
+  const months=['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+  const moGain=Math.round(annualRevGain/12);
+  // Before vs After chart
+  const currentBase = customers;
+  const afterImprovement = customers + gainable;
+  mkChart('cBarROI',{type:'bar',
+    data:{
+      labels:['Without Improvement','With Improvement'],
+      datasets:[
+        {label:'Current Customers',data:[currentBase, currentBase],backgroundColor:'#00b4ff',borderRadius:8,borderSkipped:false},
+        {label:'Gained Customers',data:[0, gainable],backgroundColor:'#00e5a0',borderRadius:8,borderSkipped:false},
+      ]
+    },
+    options:{plugins:{legend:{position:'bottom',labels:{padding:16,font:{size:12,family:'Cairo'},color:'#dcdcf4'}}},
+      scales:{x:{ticks:{color:'#6b6b8a'},grid:{color:'rgba(42,42,56,.6)'}},
+              y:{ticks:{color:'#6b6b8a',callback:v=>v.toLocaleString()},grid:{color:'rgba(42,42,56,.6)'}}}}});
+
+    const currentProfit = Math.round(customers * margin * 12);
+  const potentialProfit = Math.round((customers + gainable) * margin * 12);
+  mkChart('cMarginROI',{type:'bar',
+    data:{
+      labels:['Current Annual Profit','Potential Annual Profit'],
+      datasets:[{
+        data:[currentProfit, potentialProfit],
+        backgroundColor:['#ff7a00','#00e5a0'],
+        borderRadius:12,
+        borderSkipped:false
+      }]
+    },
+    options:{
+      plugins:{legend:{display:false}},
+      scales:{
+        x:{ticks:{color:'#6b6b8a'},grid:{color:'rgba(42,42,56,.6)'}},
+        y:{ticks:{color:'#6b6b8a',callback:v=>(v/1000).toFixed(0)+'K EGP'},grid:{color:'rgba(42,42,56,.6)'}}
+      }
+    }
+  });
+}
+
+// ── ENVIRONMENT ──
+function calcEnv(){
+  if(!A.total) return;
+  const weight=parseFloat(document.getElementById('inp-weight')?.value)||35;
+  const units=parseFloat(document.getElementById('inp-units')?.value)||25000;
+  const area=parseFloat(document.getElementById('inp-area')?.value)||2;
+  // Use actual waste % from survey presses/frequency data if available, else 30%
+  const saving=(A.waterPct||30)/100;
+
+  const plasticSaved_mo=Math.round(units*saving);
+  const plasticSaved_yr=plasticSaved_mo*12;
+  const plasticKg_yr=Math.round(plasticSaved_yr*weight/1000);
+  const plasticKm=((plasticSaved_yr*weight/1000)/1000).toFixed(2);
+  const co2Saved=Math.round(plasticKg_yr*6);
+  const chemSaved=Math.round(units*.3*0.15*12);
+
+  // Water: always scale by units input, use survey ratio if available
+  const waterSavePct=(A.waterPct||30)/100;
+  const waterSavedYr=Math.round(units*12*waterSavePct*0.015);
+  const pools=(waterSavedYr/2500).toFixed(1);
+
+  // Production savings
+  const bottlesSaved_yr = Math.round(units * 12 * saving);
+  const productionCostSaved = bottlesSaved_yr * 2;
+
+  document.getElementById('envIns').innerHTML=`
+    <div class="ins-icon">🌍</div>
+    <div>
+      <div class="ins-label">What These Numbers Mean</div>
+      <div class="ins-text">These are <strong style="color:#ffd000">potential figures</strong> — they represent what <em>could</em> be prevented if your consumers follow the correct dosage. Right now, 30% of production is driven by waste behavior, not real need.</div>
+      <div class="ins-text">Fixing dosage clarity = <strong style="color:#00e5a0">${bottlesSaved_yr.toLocaleString()} fewer bottles to produce</strong> = ${pools} Olympic pools of water saved = ${plasticKm} km less plastic in the environment.</div>
+      <span class="tag tag-g">🏆 Be the first soap brand in Egypt to quantify this</span>
+    </div>`;
+
+  document.getElementById('wowCards').innerHTML=`
+    <div class="wow-card">
+      <div style="font-size:11px;color:#ffd000;font-weight:700;letter-spacing:1px;margin-bottom:8px">⚡ CURRENT SITUATION</div>
+      <div class="wow-num" style="-webkit-text-fill-color:#ff3d5a">${(units*12).toLocaleString()}</div>
+      <div class="wow-unit" style="color:#ff3d5a">Bottles Produced / Year 🏭</div>
+      <div class="wow-label">Current annual production based on your inputs — includes waste-driven demand</div>
+    </div>
+    <div class="wow-card">
+      <div style="font-size:11px;color:#ffd000;font-weight:700;letter-spacing:1px;margin-bottom:8px">✅ AFTER IMPROVEMENT</div>
+      <div class="wow-num">${bottlesSaved_yr.toLocaleString()}</div>
+      <div class="wow-unit">Bottles No Longer Needed ♻️</div>
+      <div class="wow-label">Estimated bottles that <strong>wouldn't need to be produced</strong> if consumers use the correct dose</div>
+    </div>
+    <div class="wow-card">
+      <div style="font-size:11px;color:#ffd000;font-weight:700;letter-spacing:1px;margin-bottom:8px">🌍 ENVIRONMENTAL POTENTIAL</div>
+      <div class="wow-num">${plasticKm}</div>
+      <div class="wow-unit">km Less Plastic 🌱</div>
+      <div class="wow-label">${plasticKm} km of plastic + ${(co2Saved/1000).toFixed(1)}t CO₂ that <strong>could be prevented</strong> from entering the environment</div>
+    </div>`;
+
+  mkChart('cEnvWater',{type:'bar',
+    data:{labels:['Current Consumption','With Correct Dosage'],
+      datasets:[{data:[A.waterTotal||Math.round(units*.045),(A.waterOptimal||Math.round(units*.03))],backgroundColor:['#ff3d5a','#00e5a0'],borderRadius:8,borderSkipped:false}]},
+    options:{plugins:{legend:{display:false}},scales:{x:{ticks:{color:'#6b6b8a'},grid:{color:'rgba(42,42,56,.6)'}},y:{ticks:{color:'#6b6b8a',callback:v=>v+' m³'},grid:gridOpts}}}});
+
+  mkChart('cEnvPlastic',{type:'bar',
+    data:{labels:['Current','−10%','−20%','−30%'],
+      datasets:[{data:[units*12, Math.round(units*12*.9), Math.round(units*12*.8), Math.round(units*12*.7)].map(Math.round),
+        backgroundColor:['#ff3d5a','#ff7a00','#ffd000','#00e5a0'],borderRadius:8,borderSkipped:false}]},
+    options:{plugins:{legend:{display:false}},scales:{x:{ticks:{color:'#6b6b8a'},grid:{color:'rgba(42,42,56,.6)'}},y:{ticks:{color:'#6b6b8a',callback:v=>v.toLocaleString()},grid:gridOpts}}}});
+
+  document.getElementById('mktCards').innerHTML=`
+    <div class="mkt-card">
+      <div class="mkt-title">💧 Water Story</div>
+      <div class="mkt-item">✦ <strong>"Our product saved ${pools} Olympic pools of water this year"</strong></div>
+      <div class="mkt-item">✦ Post-worthy content that shares itself organically 📱</div>
+      <div class="mkt-item">✦ Highlight on-pack: "Correct dose = less water wasted"</div>
+    </div>
+    <div class="mkt-card">
+      <div class="mkt-title">♻️ Plastic Story</div>
+      <div class="mkt-item">✦ <strong>"${plasticKm} km less plastic in the environment annually"</strong></div>
+      <div class="mkt-item">✦ <strong>${plasticSaved_yr.toLocaleString()} fewer bottles</strong> — print it on your packaging</div>
+      <div class="mkt-item">✦ Apply for a sustainability certification 🌱</div>
+    </div>
+    <div class="mkt-card">
+      <div class="mkt-title">🏆 Brand Leadership</div>
+      <div class="mkt-item">✦ <strong>First Egyptian soap brand to quantify its environmental impact</strong></div>
+      <div class="mkt-item">✦ ESG-ready brand story for investors and retailers</div>
+      <div class="mkt-item">✦ Eco-aware consumers pay more for sustainable products 💚</div>
+    </div>`;
+}
+
+// ── NAV ──
+function showPage(id,btn){
+  document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
+  document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+  btn.classList.add('active');
+  if(id==='p4') calcROI();
+  if(id==='p5') calcEnv();
+}
+function resetAll(){
+  Object.values(charts).forEach(c=>c.destroy());
+  charts={};rawData=[];A={};
+  document.getElementById('fileInput').value='';
+  document.getElementById('s-dash').style.display='none';
+  document.getElementById('s-upload').style.display='flex';
+  document.querySelector('.tab.active')?.classList.remove('active');
+  document.querySelector('.tab')?.classList.add('active');
+  document.querySelectorAll('.page').forEach((p,i)=>{p.classList.toggle('active',i===0)});
+}
+</script>
+</body>
+</html>
