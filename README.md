@@ -9,6 +9,7 @@ It helps FMCG brands understand how overuse, unclear dosage instructions, and pa
 Revenue performance
 Product waste
 Environmental sustainability
+
 ❗ Problem Statement
 
 Consumers often use 2–3 times more liquid soap than required due to:
