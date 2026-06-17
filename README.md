@@ -1,10 +1,9 @@
 # 🧴 SMART DOSE — Consumer Liquid Soap Usage Analytics Dashboard
 
 ## 📊 Overview
-SMART DOSE is a data analytics project that explores consumer behavior in liquid soap usage within FMCG products.  
-The project aims to identify how overuse and unclear dosage instructions lead to product waste, hidden revenue loss, and environmental impact.
+SMART DOSE is a data analytics project focused on consumer behavior in liquid soap usage within the FMCG sector. The project investigates how overuse and unclear dosage instructions contribute to product waste, hidden revenue loss, and environmental impact.
 
-The dashboard translates survey data into actionable business insights for FMCG brand managers.
+Using survey data, the project builds an interactive dashboard that transforms raw responses into actionable insights for FMCG brand managers. These insights support better product design, clearer usage instructions, and more sustainable consumption patterns.
 
 ---
 
