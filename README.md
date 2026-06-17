@@ -1,4 +1,4 @@
-Overview
+🧴Overview
 
 SMART DOSE is an end-to-end data analytics and behavioral intelligence system that analyzes consumer usage behavior in liquid soap products within the FMCG sector.
 
