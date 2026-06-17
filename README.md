@@ -1,170 +1,117 @@
-# 🧴 SMART DOSE — Consumer Liquid Soap Usage Analytics Dashboard
+Overview
 
-🎯 Executive Summary
+SMART DOSE is an end-to-end data analytics and behavioral intelligence system that analyzes consumer usage behavior in liquid soap products within the FMCG sector.
 
-In the FMCG personal care industry, product usage behavior is often misaligned with intended consumption design.
+The system transforms FMCG products into data collection and decision-support tools by linking product usage to real-time consumer feedback.
 
-SMART DOSE investigates a critical but overlooked issue:
+It helps FMCG brands understand how overuse, unclear dosage instructions, and packaging design affect:
 
-Consumers significantly overuse liquid soap due to unclear dosage guidance and packaging design.
+Revenue performance
+Product waste
+Environmental sustainability
+❗ Problem Statement
 
-This behavioral gap results in:
+Consumers often use 2–3 times more liquid soap than required due to:
 
-Hidden revenue leakage for brands
-Increased environmental footprint
-Inefficient product consumption patterns
+Lack of clear dosage instructions
+Poor packaging communication
+Habitual overuse behavior
+Business Impact:
+💸 Revenue leakage
+🌍 Environmental damage
+📦 Inefficient product consumption
+📂 Dataset
+Source: Google Forms Survey
+Sample Size: 91 responses
+Type: Real + synthetic augmented data
+Domain: Dishwashing liquid usage behavior
+📊 Key Insights
+37% of users do not know correct dosage
+31% knowingly overuse product
+61% dilute product due to unclear instructions
+73% believe clearer instructions reduce usage
+25% use more than 2 pumps per wash
+📦 Business Input Panel (Client Simulation Layer)
 
-The project translates raw survey data into business intelligence dashboards that help FMCG brands optimize product design, communication, and sustainability strategies.
+The system includes a business simulation dashboard where FMCG managers can input operational variables:
 
-📌 Business Problem
+📊 Inputs:
+Product Price (EGP): 40
+Bottle Size (ML): 1000
+Number of Customers: 10,000
+Production Cost (EGP): (dynamic input)
+Bottle Weight (grams): 35
+Monthly Units Sold: 25,000
+Distribution Area: (regional segmentation)
+🎯 Purpose:
+Simulate revenue performance
+Evaluate cost efficiency
+Analyze scale impact
+Measure sustainability exposure
+🔁 System Workflow (End-to-End Architecture)
 
-Despite strong product demand, FMCG brands face a silent issue:
+The system operates as a closed-loop FMCG intelligence system:
 
-Consumers use 2–3x more liquid soap than required without awareness or control.
+1️⃣ Product Layer
 
-This creates 3 major business challenges:
+Each FMCG product contains a QR code on packaging.
 
-💸 Revenue Inefficiency
-Uncontrolled overuse reduces long-term product lifecycle value.
+2️⃣ Consumer Interaction Layer
 
-🌍 Environmental Impact
-Higher plastic consumption, water usage, and CO₂ emissions.
+Users scan the QR code and access a digital survey form.
 
-📉 Behavioral Misalignment
-Consumers lack clear understanding of proper dosage.
+3️⃣ Data Collection Layer
 
-🧠 Insight-Driven Hypothesis
+Survey captures:
 
-If consumers are provided with:
+Usage behavior
+Dosage awareness
+Consumption patterns
+4️⃣ Analytics Layer
 
-Clear dosage instructions
-Better packaging design cues
-Behavioral awareness feedback
+Data is processed using Python to:
 
-👉 Then product overuse will decrease significantly, improving both profitability and sustainability performance.
+Clean and structure responses
+Segment users
+Calculate Waste Score
+Estimate revenue impact
+Analyze environmental footprint
+5️⃣ Dashboard Layer
 
-📊 Data Strategy
-📍 Source: Google Forms Survey
-👥 Sample Size: 91 respondents
-🧪 Data Type: Real + Synthetic augmentation
-🎯 Focus: Dishwashing liquid usage behavior
-Data Dimensions:
-Usage frequency
-Pump count per use
-Awareness of dosage
-Dilution behavior
-Perception of instructions clarity
-📈 Key Business Insights
-Insight	Business Meaning
-37% unaware of correct dosage	Instructional design gap
-31% knowingly overuse	Behavioral inefficiency
-61% dilute product	Perceived product uncertainty
-73% want clearer instructions	High intervention opportunity
-25% use >2 pumps per wash	Strong overconsumption segment
-🧩 Analytical Framework
+Interactive dashboards visualize:
 
-The project is structured into 5 business intelligence layers:
-
-1️⃣ Consumer Behavior Overview
-
-Understanding usage patterns and awareness levels.
-
-2️⃣ Behavioral Segmentation
-
-Clustering users based on overuse risk profiles.
-
-3️⃣ Waste Score Index
-
-Quantifying overconsumption risk at population level.
-
-4️⃣ Growth Opportunity Model
-
-Estimating revenue recovery potential if usage is optimized.
-
-5️⃣ Environmental Impact Layer
-
-Translating usage inefficiency into:
-
-Water waste 💧
-Plastic consumption 🧴
-Carbon emissions 🌫️
-📊 Dashboard Architecture
-Data Collection → Cleaning → Behavioral Modeling → KPI Design → Visualization → Insights
-Dashboard Pages:
-📌 Overview (Usage behavior snapshot)
-👥 Segmentation (Consumer clustering)
-⚠️ Waste Score (Overuse index)
-📈 Growth Opportunity (Revenue simulation)
-🌍 Environmental Impact (Sustainability metrics)
+Behavioral insights
+Overuse risk segmentation
+Growth opportunities
+Sustainability metrics
+📈 Dashboard Modules
+Overview (Behavioral snapshot)
+Segmentation (User clustering)
+Waste Score (Overuse index)
+Growth Opportunity (Revenue simulation)
+Environmental Impact (Sustainability metrics)
 🛠️ Tech Stack
+Python (Pandas) → Data processing
+HTML/CSS → Dashboard development
+Chart.js → Data visualization
+Google Forms → Data collection
+💼 Business Impact
+Identifies hidden revenue loss from overuse
+Supports packaging redesign decisions
+Improves consumer usage efficiency
+Enhances sustainability performance
+Converts FMCG products into data-driven systems
+⚠️ Limitations
+Small dataset (91 responses)
+Synthetic data used for augmentation
+No demographic segmentation
+ROI model is assumption-based
+🚀 Future Enhancements
+Machine learning segmentation model
+Larger dataset integration
+Power BI / Tableau version
+Real-time analytics dashboard
+A/B testing for packaging design
+🧭 System Innovation
 
-Python (Pandas): Data processing & cleaning
-HTML/CSS: Dashboard structure
-Chart.js: Interactive visualization
-Google Forms: Survey data collection
-📊 Business Impact (Corporate Value)
-
-This project simulates real FMCG consulting insights:
-
-💰 Revenue Optimization
-
-Identifies hidden product loss due to overconsumption behavior.
-
-📦 Packaging Strategy
-
-Supports redesign of:
-
-Pump systems
-Dosage indicators
-Usage instructions
-🌱 Sustainability Strategy
-
-Helps brands reduce:
-
-Plastic waste
-Water consumption
-Carbon footprint
-📣 Marketing Intelligence
-
-Enables behavioral messaging such as:
-
-“Use less, achieve more”
-
-⚠️ Limitations 
-
-Small sample size (91 responses)
-Synthetic data used for enrichment
-No demographic segmentation included
-ROI model based on assumptions, not real financial integration
-
-🚀 Future Roadmap
-
-📊 Expand dataset to 1,000+ users
-🤖 Add ML-based behavior prediction model
-📍 Introduce demographic segmentation
-📈 Build Power BI / Tableau version
-🧪 Run A/B testing simulation for packaging designs
-🌍 Add country-level scalability model
-
-🧭 Project Positioning
-
-This project is positioned as:
-
-🎯 Data Analytics Case Study for FMCG Consumer Behavior Optimization
-
-It demonstrates skills in:
-
-Business problem framing
-Data storytelling
-KPI design
-Dashboard development
-Sustainability analytics
-
-👩‍💻 Author
-
-Data Analytics Portfolio Project
-Focused on FMCG insights, consumer behavior, and sustainability intelligence.
-
-⭐ Support
-
-If you found this project insightful, consider giving it a ⭐ on GitHub.
+SMART DOSE transforms FMCG products into interactive behavioral data systems using QR-enabled consumer feedback loops.
