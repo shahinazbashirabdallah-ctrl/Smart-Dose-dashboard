@@ -35,7 +35,9 @@ Domain: Dishwashing liquid usage behavior
 
 The system includes a business simulation dashboard where FMCG managers can input operational variables:
 
+
 📊 Inputs:
+
 Product Price (EGP): 40
 Bottle Size (ML): 1000
 Number of Customers: 10,000
@@ -43,11 +45,14 @@ Production Cost (EGP): (dynamic input)
 Bottle Weight (grams): 35
 Monthly Units Sold: 25,000
 Distribution Area: (regional segmentation)
+
 🎯 Purpose:
+
 Simulate revenue performance
 Evaluate cost efficiency
 Analyze scale impact
 Measure sustainability exposure
+
 🔁 System Workflow (End-to-End Architecture)
 
 The system operates as a closed-loop FMCG intelligence system:
@@ -67,6 +72,7 @@ Survey captures:
 Usage behavior
 Dosage awareness
 Consumption patterns
+
 4️⃣ Analytics Layer
 
 Data is processed using Python to:
@@ -76,42 +82,53 @@ Segment users
 Calculate Waste Score
 Estimate revenue impact
 Analyze environmental footprint
+
 5️⃣ Dashboard Layer
 
 Interactive dashboards visualize:
-
 Behavioral insights
 Overuse risk segmentation
 Growth opportunities
 Sustainability metrics
+
 📈 Dashboard Modules
+
 Overview (Behavioral snapshot)
 Segmentation (User clustering)
 Waste Score (Overuse index)
 Growth Opportunity (Revenue simulation)
 Environmental Impact (Sustainability metrics)
+
 🛠️ Tech Stack
+
 Python (Pandas) → Data processing
 HTML/CSS → Dashboard development
 Chart.js → Data visualization
 Google Forms → Data collection
+
 💼 Business Impact
+
 Identifies hidden revenue loss from overuse
 Supports packaging redesign decisions
 Improves consumer usage efficiency
 Enhances sustainability performance
 Converts FMCG products into data-driven systems
+
 ⚠️ Limitations
+
 Small dataset (91 responses)
 Synthetic data used for augmentation
 No demographic segmentation
 ROI model is assumption-based
+
 🚀 Future Enhancements
+
 Machine learning segmentation model
 Larger dataset integration
 Power BI / Tableau version
 Real-time analytics dashboard
 A/B testing for packaging design
+
 🧭 System Innovation
 
 SMART DOSE transforms FMCG products into interactive behavioral data systems using QR-enabled consumer feedback loops.
