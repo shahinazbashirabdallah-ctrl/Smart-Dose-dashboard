@@ -17,21 +17,27 @@ Consumers often use 2–3 times more liquid soap than required due to:
 Lack of clear dosage instructions
 Poor packaging communication
 Habitual overuse behavior
+
 Business Impact:
+
 💸 Revenue leakage
 🌍 Environmental damage
 📦 Inefficient product consumption
 📂 Dataset
+
 Source: Google Forms Survey
 Sample Size: 91 responses
 Type: Real + synthetic augmented data
 Domain: Dishwashing liquid usage behavior
+
 📊 Key Insights
+
 37% of users do not know correct dosage
 31% knowingly overuse product
 61% dilute product due to unclear instructions
 73% believe clearer instructions reduce usage
 25% use more than 2 pumps per wash
+
 📦 Business Input Panel (Client Simulation Layer)
 
 The system includes a business simulation dashboard where FMCG managers can input operational variables:
